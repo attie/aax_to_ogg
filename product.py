@@ -1,5 +1,6 @@
 from pprint import pprint
 
+import re
 import urllib.parse, urllib.request
 from lxml import html
 
@@ -67,27 +68,36 @@ class ProductHelper:
         data = {}
 
         datapoints = {
-            'title':        {                          'xpath': "//h1[@itemprop='name']/text()",                   },
-            'author':       { 'text': 'Written by:',                                                               },
-            'narrator':     { 'text': 'Narrated by:',                                                              },
-            'publisher':    { 'text': 'Publisher:',    'xpath': "//li[span[contains(text(),$text)]]/span/a/text()" },
-            'release_date': { 'text': 'Release Date:',                                                             },
-            'series':       { 'text': 'Series:',       'xpath': "//li/span[contains(text(),$text)]/a/text()"       },
-            'series_book':  { 'text': 'Series:',       'xpath': "//li/span[contains(text(),$text)]/span/text()"    },
-            'series_link':  { 'text': 'Series:',       'xpath': "//li/span[contains(text(),$text)]/a/@href"        },
+            'title':        { 'xpath_append': "/h1/text()",                   'class': 'bc-list-item'     },
+            'author':       { 'xpath_append': "/a/text()",                    'class': 'authorLabel'      },
+            'narrator':     { 'xpath_append': "/a/text()",                    'class': 'narratorLabel'    },
+            'publisher':    { 'xpath_append': "/a/text()",                    'class': 'publisherLabel'   },
+            'release_date': { 'xpath_append': "/text()",                      'class': 'releaseDateLabel', 'regex_match': '^Release date: (?P<d>[0-9]{2})-(?P<m>[0-9]{2})-(?P<y>[0-9]{2})$', 'replace': '20%(y)s-%(m)s-%(d)s' },
+            'series':       { 'xpath_append': "/a/text()",                    'class': 'seriesLabel'      },
+            'series_book':  { 'xpath_append': "/a/following-sibling::text()", 'class': 'seriesLabel',      'regex_match': '^, (?P<book>.*)$', 'replace': '%(book)s' },
+            'series_link':  { 'xpath_append': "/a/@href",                     'class': 'seriesLabel'      },
+
         }
         for key, info in datapoints.items():
-            if 'xpath' not in info or info['xpath'] is None:
-                info['xpath'] = "//li[span[contains(text(),$text)]]/span/a/span/text()"
-            if 'text' not in info:
-                info['text'] = None
+            if 'xpath' not in info:
+                info['xpath'] = "//li[contains(concat(' ',normalize-space(@class),' '),' %(class)s ')]"
+            if 'xpath_append' in info:
+                info['xpath'] += info['xpath_append']
 
-            x = et.xpath(info['xpath'], text = info['text'])
+            info['xpath'] = info['xpath'] % ( info )
+
+            x = et.xpath(info['xpath'])
             if len(x) != 1:
                 data[key] = None
                 continue
 
-            data[key] = x[0]
+            value = ' '.join(x[0].split())
+
+            if 'regex_match' in info and 'replace' in info:
+                match = re.match(info['regex_match'], value)
+                value = info['replace'] % ( match.groupdict() )
+
+            data[key] = value
 
         if data['series_book'] is not None:
             if data['series_book'][:2] == ', ':
