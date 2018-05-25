@@ -1,10 +1,16 @@
+import sys
 import argparse
 import os.path
 import multiprocessing
 
 class Args:
     def __init__(self):
-        self.p = argparse.ArgumentParser(description = 'Process ADH or AAX files in to Ogg/Vorbis')
+        if os.path.basename(sys.argv[0]) == '__main__.py':
+            prog = 'aax_to_ogg'
+        else:
+            prog = None
+
+        self.p = argparse.ArgumentParser(prog = prog, description = 'Process ADH or AAX files in to Ogg/Vorbis')
 
         # TODO: default = None - auto detect new users, and store the activation bytes _somewhere_
         self.p.add_argument('-a', '--activation-bytes',
