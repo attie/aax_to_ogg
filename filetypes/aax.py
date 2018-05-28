@@ -62,6 +62,7 @@ class AaxInfo:
 
         self.metadata = {}
         self.chapters = []
+        self.streams = {}
 
         self.state = -1
         self.lines = None
@@ -166,6 +167,18 @@ class AaxInfo:
         if m is not None:
             # ah hah! now the title is filled in
             self.chapters[-1] = { **self.chapters[-1], **m.groupdict() }
+
+        m = re.match('^    Stream #(?P<stream_id>[0-9]+(:[0-9]+)?)(\((?P<lang>[^\)]+)\))?: (?P<type>[^:]+): (?P<format>.+)$', line)
+        if m is not None:
+            stream = m.groupdict()
+            m = re.match('^(?P<codec>mp3), (?P<sample_rate>[0-9]+) Hz, (?P<channels>stereo|mono), (?P<sample_shape>(s|u)(8|16|24|32)p?), (?P<bitrate>[0-9]+) kb/s', stream['format'])
+            if m is not None:
+                stream['mp3'] = m.groupdict()
+            m = re.match('^(?P<codec>aac) \(LC\) \(aavd / 0x[0-9a-fA-F]+\), (?P<sample_rate>[0-9]+) Hz, (?P<channels>stereo|mono), (?P<sample_shape>((s|u)(8|16|24|32)|flt)p?), (?P<bitrate>[0-9]+) kb/s', stream['format'])
+            if m is not None:
+                stream['aac'] = m.groupdict()
+
+            self.streams[stream['stream_id']] = stream
 
 class AaxSplit:
     def __init__(self, aax_info):
