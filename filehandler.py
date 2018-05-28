@@ -2,12 +2,12 @@ from os import path
 from glob import glob
 from importlib import import_module
 
+from aax_to_ogg.args import config
+
 FT_MODULE_BASE = 'aax_to_ogg.filetypes'
 
 class FileHandler:
-    def __init__(self, config):
-        self.config = config
-
+    def __init__(self):
         # load each of the filetype plugins...
         filetypes_path = import_module(FT_MODULE_BASE).__path__._path[0]
         plugin_names = [ name for name in glob(path.join(filetypes_path, '*.py')) ]
@@ -39,5 +39,5 @@ class FileHandler:
     def handle_file(self, filename):
         plugin = self.get_file_handler(filename)
 
-        p = plugin(self, self.config, filename)
+        p = plugin(self, filename)
         p.process()

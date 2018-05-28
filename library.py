@@ -1,6 +1,7 @@
 import os
 
 from aax_to_ogg.util import safe_filename
+from aax_to_ogg.args import config
 
 class Library:
     @staticmethod
@@ -27,13 +28,13 @@ class Library:
         return os.path.join(*[ safe_filename(p) for p in path ])
 
     @classmethod
-    def build_book_absdir(cls, library_path, book_metadata):
+    def build_book_absdir(cls, book_metadata):
         book_path = cls.build_book_dir(book_metadata)
-        book_path = os.path.join(library_path, book_path)
+        book_path = os.path.join(config.library, book_path)
         return os.path.abspath(book_path)
 
     @classmethod
-    def make_book_absdir(cls, library_path, book_metadata):
-        book_path = cls.build_book_absdir(library_path, book_metadata)
+    def make_book_absdir(cls, book_metadata):
+        book_path = cls.build_book_absdir(book_metadata)
         os.makedirs(book_path, exist_ok=True)
         return book_path

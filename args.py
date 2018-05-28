@@ -72,3 +72,5 @@ class Args:
 
     def parse(self):
         return self.p.parse_args()
+
+config = Args().parse()

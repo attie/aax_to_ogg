@@ -1,9 +1,8 @@
-from aax_to_ogg.args import Args
+from aax_to_ogg.args import config
 from aax_to_ogg.filehandler import FileHandler
 
 def main():
-    config = Args().parse()
-    handler = FileHandler(config)
+    handler = FileHandler()
 
     for filename in config.files:
         print('Processing [%s]...' % ( filename ))

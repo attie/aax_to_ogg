@@ -9,6 +9,7 @@ from multiprocessing import Pool
 from pprint import pprint
 from aax_to_ogg.util import tell_bounds
 
+from aax_to_ogg.args import config
 from aax_to_ogg.product import ProductHelper
 from aax_to_ogg.library import Library
 
@@ -17,18 +18,17 @@ class FileHandler_aax:
     def can_handle_file(filename):
         return re.match('^(?P<book_id>[a-zA-Z0-9]{10})(_ep[56])?\.aax$', os.path.basename(filename))
 
-    def __init__(self, file_handler, config, filename):
+    def __init__(self, file_handler, filename):
         if not self.can_handle_file(filename):
             raise Exception('cannot handle the given file...')
 
         self.file_handler = file_handler
-        self.config = config
         self.filename = filename
 
     def process(self):
         book_id = self.can_handle_file(self.filename).groupdict()['book_id']
-        book_metadata = ProductHelper.get_book_metadata(self.config.domain, book_id)
-        book_path = Library.make_book_absdir(self.config.library, book_metadata)
+        book_metadata = ProductHelper.get_book_metadata(config.domain, book_id)
+        book_path = Library.make_book_absdir(book_metadata)
 
         metadata = os.path.join(book_path, '%s.json' % ( book_id ))
         with open(metadata, 'w') as f:
@@ -46,7 +46,7 @@ class FileHandler_aax:
         basename, _ = os.path.splitext(self.filename)
 
         i = AaxInfo(self.filename)
-        s = AaxSplit(self.config, i)
+        s = AaxSplit(i)
 
         with open('%s.txt' % ( basename ), 'wb') as f:
             for line in i.get_output():
@@ -160,8 +160,7 @@ class AaxInfo:
             self.chapters[-1] = { **self.chapters[-1], **m.groupdict() }
 
 class AaxSplit:
-    def __init__(self, config, aax_info):
-        self.config = config
+    def __init__(self, aax_info):
         self.aax_info = aax_info
         self.basename, _ = os.path.splitext(self.aax_info.filename)
 
@@ -174,7 +173,7 @@ class AaxSplit:
         self.activation_bytes = self.pick_activation_bytes()
 
     def pick_activation_bytes(self):
-        for ab in self.config.activation_bytes:
+        for ab in config.activation_bytes:
             if self.test_activation_bytes(ab):
                 return ab
 
@@ -222,15 +221,15 @@ class AaxSplit:
         p = subprocess.run(args, **kwargs)
 
     def extract_chapters(self):
-        pool = Pool(processes=self.config.parallel)
+        pool = Pool(processes=config.parallel)
 
         for i, first, last, chapter in tell_bounds(self.aax_info.get_chapters()):
-            if not self.config.no_snip:
+            if not config.no_snip:
                 if first:
-                    chapter['t_start'] += self.config.snip_intro_len
+                    chapter['t_start'] += config.snip_intro_len
                     self.extract_chapter(i, 0, chapter['t_start'], 'This is Audible', pool=pool)
                 if last:
-                    t = chapter['t_end'] - self.config.snip_outro_len
+                    t = chapter['t_end'] - config.snip_outro_len
                     self.extract_chapter(i + 2, t, chapter['t_end'], 'Audible hopes you have enjoied...', pool=pool)
                     chapter['t_end'] = t
 
