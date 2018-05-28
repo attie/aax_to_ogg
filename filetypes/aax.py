@@ -181,7 +181,7 @@ class AaxSplit:
         self.activation_bytes = self.pick_activation_bytes()
 
     def pick_activation_bytes(self):
-        for ab in config.activation_bytes:
+        for ab in [ None, *config.activation_bytes ]:
             if self.test_activation_bytes(ab):
                 return ab
 
@@ -191,7 +191,12 @@ class AaxSplit:
         args = [
             'ffmpeg',
             '-y',
-            '-activation_bytes', activation_bytes,
+        ]
+        if activation_bytes is not None:
+            args.extend([
+                '-activation_bytes', activation_bytes,
+            ])
+        args.extend([
             '-ss', '0',
             '-i', self.aax_info.filename,
             '-to', '0.01',
@@ -199,7 +204,7 @@ class AaxSplit:
             '-codec:a', 'libvorbis',
             '-f', 'ogg',
             '/dev/null'
-        ]
+        ])
 
         kwargs = {
             'stdin': subprocess.DEVNULL,
@@ -255,7 +260,12 @@ class AaxSplit:
             'ffmpeg',
             '-y',
             '-loglevel', 'error',
-            '-activation_bytes', self.activation_bytes,
+        ]
+        if self.activation_bytes is not None:
+            args.extend([
+                '-activation_bytes', self.activation_bytes,
+            ])
+        args.extend([
             '-accurate_seek',
             '-ss', '%.6f' % ( t_start ),
             '-i', self.aax_info.filename,
@@ -264,7 +274,7 @@ class AaxSplit:
             '-codec:a', 'libvorbis',
             '-ab', '%dk' % ( self.bitrate ),
             '%s_part%03d.ogg' % ( self.basename, num )
-        ]
+        ])
 
         kwargs = {
             'stdin': subprocess.DEVNULL,
