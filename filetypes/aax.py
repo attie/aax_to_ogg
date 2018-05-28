@@ -79,6 +79,13 @@ class AaxInfo:
     def get_chapters(self):
         if self.state == -1:
             self.run()
+        if len(self.chapters) == 0:
+            return [ {
+                'chapter_id': '0',
+                't_start': float(0),
+                't_end': self.metadata['duration'],
+                'title': None,
+            } ]
         return self.chapters
 
     def run(self):
