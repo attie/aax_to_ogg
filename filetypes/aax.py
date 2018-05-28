@@ -240,20 +240,20 @@ class AaxSplit:
             if not config.no_snip:
                 if first:
                     chapter['t_start'] += config.snip_intro_len
-                    self.extract_chapter(i, 0, chapter['t_start'], 'This is Audible', pool=pool)
+                    self.extract_chapter(self.aax_info.filename, i, 0, chapter['t_start'], 'This is Audible', pool=pool)
                 if last:
                     t = chapter['t_end'] - config.snip_outro_len
-                    self.extract_chapter(i + 2, t, chapter['t_end'], 'Audible hopes you have enjoied...', pool=pool)
+                    self.extract_chapter(self.aax_info.filename, i + 2, t, chapter['t_end'], 'Audible hopes you have enjoied...', pool=pool)
                     chapter['t_end'] = t
 
-            self.extract_chapter(i + 1, chapter['t_start'], chapter['t_end'], chapter['title'], pool=pool)
+            self.extract_chapter(self.aax_info.filename, i + 1, chapter['t_start'], chapter['t_end'], chapter['title'], pool=pool)
 
         pool.close()
         pool.join()
 
-    def extract_chapter(self, num, t_start, t_end, title, pool=None):
+    def extract_chapter(self, input_filename, num, t_start, t_end, title, pool=None):
         if pool is not None:
-            pool.apply_async(self.extract_chapter, (num, t_start, t_end, title))
+            pool.apply_async(self.extract_chapter, (input_filename, num, t_start, t_end, title))
             return
 
         args = [
@@ -268,7 +268,7 @@ class AaxSplit:
         args.extend([
             '-accurate_seek',
             '-ss', '%.6f' % ( t_start ),
-            '-i', self.aax_info.filename,
+            '-i', input_filename,
             '-to', '%.6f' % ( t_end - t_start ),
             '-vn',
             '-codec:a', 'libvorbis',
