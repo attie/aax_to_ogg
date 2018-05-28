@@ -13,7 +13,7 @@ class FileHandler:
         plugin_names = [ name for name in glob(path.join(filetypes_path, '*.py')) ]
 
         self.plugins = []
-        for plugin in [ name.rsplit(path.sep, 1)[-1].rsplit('.', 1)[0] for name in plugin_names]:
+        for plugin in [ name.rsplit(path.sep, 1)[-1].rsplit('.', 1)[0] for name in plugin_names ]:
             module_name = '%s.%s' % ( FT_MODULE_BASE, plugin )
             class_name = 'FileHandler_%s' % ( plugin )
 
