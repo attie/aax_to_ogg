@@ -43,6 +43,11 @@ class Args:
             default='./audio'
         )
 
+        self.p.add_argument('-F', '--flat-library',
+            action='store_true',
+            help='store files in a flat library',
+        )
+
         self.p.add_argument('-s', '--no-snip',
             action='store_true',
             help='do not snip the "This is Audible", and "Audible hopes you have enjoied" from the first and last chapters'

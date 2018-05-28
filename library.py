@@ -6,6 +6,9 @@ from aax_to_ogg.args import config
 class Library:
     @staticmethod
     def build_book_dir(book_metadata):
+        if config.flat_library:
+            return '.'
+
         path = []
 
         if book_metadata['series'] is not None:
