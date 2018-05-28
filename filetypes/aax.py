@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+import os
 import re
 import json
 import shutil
-import os.path
 import subprocess
 from multiprocessing import Pool
 from pprint import pprint
@@ -246,23 +246,43 @@ class AaxSplit:
 
         p = subprocess.run(args, **kwargs)
 
-    def extract_chapters(self):
+    def _extract_chapters(self, input_filename, chapters):
         pool = Pool(processes=config.parallel)
 
-        for i, first, last, chapter in tell_bounds(self.aax_info.get_chapters()):
+        for i, first, last, chapter in tell_bounds(chapters):
             if not config.no_snip:
                 if first:
                     chapter['t_start'] += config.snip_intro_len
-                    self.extract_chapter(self.aax_info.filename, i, 0, chapter['t_start'], 'This is Audible', pool=pool)
+                    self.extract_chapter(input_filename, i, 0, chapter['t_start'], 'This is Audible', pool=pool)
                 if last:
                     t = chapter['t_end'] - config.snip_outro_len
-                    self.extract_chapter(self.aax_info.filename, i + 2, t, chapter['t_end'], 'Audible hopes you have enjoied...', pool=pool)
+                    self.extract_chapter(input_filename, i + 2, t, chapter['t_end'], 'Audible hopes you have enjoied...', pool=pool)
                     chapter['t_end'] = t
 
-            self.extract_chapter(self.aax_info.filename, i + 1, chapter['t_start'], chapter['t_end'], chapter['title'], pool=pool)
+            self.extract_chapter(input_filename, i + 1, chapter['t_start'], chapter['t_end'], chapter['title'], pool=pool)
 
         pool.close()
         pool.join()
+
+    def extract_chapters(self):
+        if 'mp3' in self.aax_info.streams['0:0']:
+            # for some reason seeking doesn't work properly, and we end up with
+            # garbled output... to resolve this, convert the whole file first...
+            input_filename = self.convert_whole(self.aax_info.filename)
+
+            # this also means that the file's runtime can be different... up to
+            # ~2 minutes in some cases...
+            chapters = AaxInfo(input_filename).get_chapters()
+            tidy_input_file = True
+        else:
+            input_filename = self.aax_info.filename
+            chapters = self.aax_info.get_chapters()
+            tidy_input_file = False
+
+        self._extract_chapters(input_filename, chapters)
+
+        if tidy_input_file:
+            os.remove(input_filename)
 
     def extract_chapter(self, input_filename, num, t_start, t_end, title, pool=None):
         if pool is not None:
@@ -299,3 +319,36 @@ class AaxSplit:
         p = subprocess.run(args, **kwargs)
         if p.returncode != 0:
             raise Exception('Extract whole failed...')
+
+    def convert_whole(self, input_filename):
+        output_filename = '%s.ogg' % ( self.basename )
+
+        args = [
+            'ffmpeg',
+            '-y',
+            '-loglevel', 'error',
+        ]
+        if self.activation_bytes is not None:
+            args.extend([
+                '-activation_bytes', self.activation_bytes,
+            ])
+        args.extend([
+            '-i', input_filename,
+            '-vn',
+            '-codec:a', 'libvorbis',
+            '-ab', '%dk' % ( self.bitrate ),
+            output_filename
+        ])
+
+        kwargs = {
+            'stdin': subprocess.DEVNULL,
+            'stdout': subprocess.DEVNULL
+        }
+
+        print('    Converting Whole...')
+
+        p = subprocess.run(args, **kwargs)
+        if p.returncode != 0:
+            raise Exception('Extract whole failed...')
+
+        return output_filename
