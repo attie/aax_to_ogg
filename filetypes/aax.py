@@ -296,4 +296,6 @@ class AaxSplit:
 
         print('    Extracting #%d... (%s)' % ( num, title ))
 
-        subprocess.run(args, **kwargs)
+        p = subprocess.run(args, **kwargs)
+        if p.returncode != 0:
+            raise Exception('Extract whole failed...')
