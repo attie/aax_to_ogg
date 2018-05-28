@@ -7,7 +7,7 @@ import os.path
 import subprocess
 from multiprocessing import Pool
 from pprint import pprint
-from aax_to_ogg.util import tell_bounds
+from aax_to_ogg.util import tell_bounds, human_to_seconds
 
 from aax_to_ogg.args import config
 from aax_to_ogg.product import ProductHelper
@@ -132,6 +132,7 @@ class AaxInfo:
             if m is not None:
                 m = m.groupdict()
                 self.metadata['bitrate'] = int(m['bitrate'])
+                self.metadata['duration'] = human_to_seconds(m['duration'])
 
         # returning other than True will cause us to be run _again_
         return True

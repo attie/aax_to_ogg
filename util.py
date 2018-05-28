@@ -35,3 +35,14 @@ def safe_filename(filename):
     filename = re.sub('\.+$', '', filename)
 
     return filename
+
+def human_to_seconds(human):
+    # we expect 'human' to be clock time - e.g: '07:37:22.21'
+    # what about things that are >24h??
+
+    sec = 0
+    for t in human.split(':'):
+        sec *= 60
+        sec += float(t)
+
+    return sec
