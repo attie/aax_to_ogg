@@ -20,12 +20,11 @@ class FileHandler_adh:
 
         return True
 
-    def __init__(self, file_handler, config, filename):
+    def __init__(self, file_handler, filename):
         if not self.can_handle_file(filename):
             raise Exception('cannot handle the given file...')
 
         self.file_handler = file_handler
-        self.config = config
         self.filename = filename
 
         self.supported_awtypes = {
@@ -46,7 +45,7 @@ class FileHandler_adh:
 
         book_id = ProductHelper.product_id_to_book_id(info['domain'], info['product_id'])
         book_metadata = ProductHelper.get_book_metadata(info['domain'], book_id)
-        book_path = Library.make_book_absdir(self.config.library, book_metadata)
+        book_path = Library.make_book_absdir(book_metadata)
 
         print('Storing in "%s"...' % ( book_path ))
 
@@ -62,7 +61,7 @@ class FileHandler_adh:
 
         plugin = self.file_handler.get_file_handler(new_filename)
 
-        p = plugin(self.file_handler, self.config, new_filename)
+        p = plugin(self.file_handler, new_filename)
         p.split()
 
     # ---
