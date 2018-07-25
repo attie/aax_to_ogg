@@ -5,7 +5,7 @@ from aax_to_ogg.args import config
 
 class Library:
     @staticmethod
-    def build_book_dir(book_metadata):
+    def build_book_dir(book_metadata, subtitle = None):
         if config.flat_library:
             return '.'
 
@@ -28,16 +28,19 @@ class Library:
         if len(path) > 0 and path[0][:4] == 'The ':
             path[0] = '%s, The' % ( path[0][4:] )
 
+        if subtitle is not None:
+            path.append(subtitle)
+
         return os.path.join(*[ safe_filename(p) for p in path ])
 
     @classmethod
-    def build_book_absdir(cls, book_metadata):
-        book_path = cls.build_book_dir(book_metadata)
+    def build_book_absdir(cls, book_metadata, subtitle = None):
+        book_path = cls.build_book_dir(book_metadata, subtitle = subtitle)
         book_path = os.path.join(config.library, book_path)
         return os.path.abspath(book_path)
 
     @classmethod
-    def make_book_absdir(cls, book_metadata):
-        book_path = cls.build_book_absdir(book_metadata)
+    def make_book_absdir(cls, book_metadata, subtitle = None):
+        book_path = cls.build_book_absdir(book_metadata, subtitle = subtitle)
         os.makedirs(book_path, exist_ok=True)
         return book_path
