@@ -5,6 +5,8 @@ import urllib.parse, urllib.request
 from lxml import html
 
 class ProductHelper:
+    xpath_search_item_all   = "//li[contains(concat(' ',normalize-space(@class),' '),' productListItem ')]"
+
     @staticmethod
     def get_search_url(domain, search_keywords):
         prefix = 'https://' + domain + '/search?'
@@ -30,7 +32,7 @@ class ProductHelper:
             et = html.fromstring(search_req.read())
 
         # pick out the link that _should_ point at the book's ID
-        book_paths = et.xpath("//li[contains(concat(' ',normalize-space(@class),' '),' productListItem ')]//a[contains(concat(' ',normalize-space(@class),' '),' bc-link ')][starts-with(@href,'/pd/')][img]/@href")
+        book_paths = et.xpath(cls.xpath_search_item_all + "//a[contains(concat(' ',normalize-space(@class),' '),' bc-link ')][starts-with(@href,'/pd/')][img]/@href")
         if len(book_paths) < 1:
             raise Exception('no results for book search...')
 
