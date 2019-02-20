@@ -2,6 +2,7 @@ from pprint import pprint
 
 import re
 import urllib.parse, urllib.request
+from sys import stderr
 from lxml import html
 
 from aax_to_ogg.args import config
@@ -61,7 +62,7 @@ class ProductHelper:
         # load the book's page
         url = cls.get_search_url(domain, book_id)
         if config.debug:
-            print('Retrieving book metadata from [%s]' % ( url ))
+            print('Retrieving book metadata from [%s]' % ( url ), file=stderr)
 
         with urllib.request.urlopen(url) as search_req:
             et = html.fromstring(search_req.read())
@@ -94,6 +95,10 @@ class ProductHelper:
 
             info['xpath'] = info['xpath'] % ( info )
 
+            if config.debug:
+                print('=== %s ===' % ( key ), file=stderr)
+                print('       XPath: %s' % ( info['xpath'] ), file=stderr)
+
             x = et.xpath(info['xpath'])
             if len(x) != 1:
                 data[key] = None
@@ -101,9 +106,15 @@ class ProductHelper:
 
             value = ' '.join(x[0].split())
 
+            if config.debug:
+                print('Before Fixup: %s' % ( value ), file=stderr)
+
             if 'regex_match' in info and 'replace' in info:
                 match = re.match(info['regex_match'], value)
                 value = info['replace'] % ( match.groupdict() )
+
+            if config.debug:
+                print(' After Fixup: %s' % ( value ), file=stderr)
 
             data[key] = value
 
