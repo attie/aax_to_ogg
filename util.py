@@ -28,7 +28,7 @@ def safe_filename(filename):
     filename = re.sub(' *: +', ' - ', filename)
 
     # limit the permitted characters, hard
-    keep_chars = ( ' ', '.', '_', '-' )
+    keep_chars = ( ' ', '.', '_', '-', ',' )
     filename = ''.join(c for c in filename if c.isalnum() or c in keep_chars).rstrip()
 
     # cannot end with a dot... for Windows
