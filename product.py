@@ -59,7 +59,7 @@ class ProductHelper:
         }
 
         # load the book's page
-        url = cls.get_book_url(domain, book_id)
+        url = cls.get_search_url(domain, book_id)
         if config.debug:
             print('Retrieving book metadata from [%s]' % ( url ))
 
@@ -75,19 +75,20 @@ class ProductHelper:
         data = {}
 
         datapoints = {
-            'title':        { 'xpath_append': "/h1/text()",                   'class': 'bc-list-item'     },
-            'author':       { 'xpath_append': "/a/text()",                    'class': 'authorLabel'      },
-            'narrator':     { 'xpath_append': "/a/text()",                    'class': 'narratorLabel'    },
-            'publisher':    { 'xpath_append': "/a/text()",                    'class': 'publisherLabel'   },
-            'release_date': { 'xpath_append': "/text()",                      'class': 'releaseDateLabel', 'regex_match': '^Release date: (?P<d>[0-9]{2})-(?P<m>[0-9]{2})-(?P<y>[0-9]{2})$', 'replace': '20%(y)s-%(m)s-%(d)s' },
-            'series':       { 'xpath_append': "/a/text()",                    'class': 'seriesLabel'      },
-            'series_book':  { 'xpath_append': "/a/following-sibling::text()", 'class': 'seriesLabel',      'regex_match': '^, (?P<book>.*)$', 'replace': '%(book)s' },
-            'series_link':  { 'xpath_append': "/a/@href",                     'class': 'seriesLabel'      },
+            'title':        { 'xpath_append': "/h3/a/text()",                      'class': 'bc-list-item'     },
+            'author':       { 'xpath_append': "/span/a/text()",                    'class': 'authorLabel'      },
+            'narrator':     { 'xpath_append': "/span/a/text()",                    'class': 'narratorLabel'    },
+            'publisher':    { 'xpath_append': "/span/a/text()",                    'class': 'publisherLabel'   },
+            'release_date': { 'xpath_append': "/span/text()",                      'class': 'releaseDateLabel', 'regex_match': '^Release date: (?P<d>[0-9]{2})-(?P<m>[0-9]{2})-(?P<y>[0-9]{2})$', 'replace': '20%(y)s-%(m)s-%(d)s' },
+            'series':       { 'xpath_append': "/span/a/text()",                    'class': 'seriesLabel'      },
+            'series_book':  { 'xpath_append': "/span/a/following-sibling::text()", 'class': 'seriesLabel',      'regex_match': '^, (?P<book>.*)$', 'replace': '%(book)s' },
+            'series_link':  { 'xpath_append': "/span/a/@href",                     'class': 'seriesLabel'      },
 
         }
         for key, info in datapoints.items():
             if 'xpath' not in info:
-                info['xpath'] = "//li[contains(concat(' ',normalize-space(@class),' '),' %(class)s ')]"
+                info['xpath']  = cls.xpath_search_item_all + "[1]"
+                info['xpath'] += "//li[contains(concat(' ',normalize-space(@class),' '),' %(class)s ')]"
             if 'xpath_append' in info:
                 info['xpath'] += info['xpath_append']
 
