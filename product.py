@@ -4,6 +4,8 @@ import re
 import urllib.parse, urllib.request
 from lxml import html
 
+from aax_to_ogg.args import config
+
 class ProductHelper:
     xpath_search_item_all   = "//li[contains(concat(' ',normalize-space(@class),' '),' productListItem ')]"
 
@@ -58,6 +60,9 @@ class ProductHelper:
 
         # load the book's page
         url = cls.get_book_url(domain, book_id)
+        if config.debug:
+            print('Retrieving book metadata from [%s]' % ( url ))
+
         with urllib.request.urlopen(url) as search_req:
             et = html.fromstring(search_req.read())
 
