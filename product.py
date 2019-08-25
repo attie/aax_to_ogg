@@ -2,6 +2,7 @@ from pprint import pprint
 
 import re
 import urllib.parse, urllib.request
+import json
 from sys import stderr
 from lxml import html
 
@@ -9,6 +10,7 @@ from aax_to_ogg.args import config
 
 class ProductHelper:
     xpath_search_item_all   = "//li[contains(concat(' ',normalize-space(@class),' '),' productListItem ')]"
+    xpath_product_info_json = "//div[@id='bottom-0']/script[2]/text()"
 
     @staticmethod
     def get_search_url(domain, search_keywords):
@@ -29,7 +31,7 @@ class ProductHelper:
 
     @classmethod
     def search_for_book_id(cls, domain, search_term):
-        # search for the product ID
+        # search for the book ID
         url = cls.get_search_url(domain, search_term)
         with urllib.request.urlopen(url) as search_req:
             et = html.fromstring(search_req.read())
@@ -48,6 +50,29 @@ class ProductHelper:
         book_id = book_id[-1]
 
         return book_id
+
+    @classmethod
+    def get_product_id(cls, domain, book_id):
+        url = cls.get_book_url(domain, book_id)
+        with urllib.request.urlopen(url) as book_req:
+            et = html.fromstring(book_req.read())
+
+        info_json_raw = et.xpath(cls.xpath_product_info_json)
+        if len(info_json_raw) < 1:
+            raise Exception('no info JSON located...')
+
+        if len(info_json_raw) > 1:
+            print('WARNING: multiple info JSON options located...')
+
+        for ij in info_json_raw:
+            try:
+                ij = json.loads(ij)
+                product_id = ij[0]['sku']
+                return product_id
+            except:
+                continue
+
+        raise Exception('no valid info JSON options located...')
 
     @classmethod
     def get_book_metadata(cls, domain, book_id):
