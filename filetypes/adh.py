@@ -135,7 +135,14 @@ class FileHandler_adh:
             prog.update(min(percent, 100))
 
         prog.start()
+
+        opener = urllib.request.build_opener()
+        opener.addheaders = [
+            ('User-Agent', 'Audible ADM 6.6.0.19;Windows Vista  Build 9200'),
+        ]
+        urllib.request.install_opener(opener)
         urllib.request.urlretrieve(url, filename = target, reporthook = report_callback)
+
         prog.finish()
 
         return target
