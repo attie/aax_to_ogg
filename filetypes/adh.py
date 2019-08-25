@@ -52,6 +52,7 @@ class FileHandler_adh:
 
         if info['product_id'] != book_id:
             print('search for "%s" returned book ID: %s ... is this correct?' % ( search_term, book_id ))
+            print('visit: %s' % ( ProductHelper.get_book_url(info['domain'], book_id) ))
 
             response = None
             while response not in [ 'y', 'n' ]:
