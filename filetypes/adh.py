@@ -43,6 +43,9 @@ class FileHandler_adh:
         if 'product_id' not in info:
             raise Exception('unknown product_id...')
 
+        if info['product_id'] == 'null':
+            raise Exception('unexpected "null" product_id...')
+
         book_id = ProductHelper.product_id_to_book_id(info['domain'], info['product_id'])
         book_metadata = ProductHelper.get_book_metadata(info['domain'], book_id)
         book_path = Library.make_book_absdir(book_metadata)
