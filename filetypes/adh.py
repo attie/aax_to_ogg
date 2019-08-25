@@ -107,7 +107,7 @@ class FileHandler_adh:
         url = ProductHelper.get_adh_url(info)
 
         # uses progressbar2
-        prog = ProgressBar(max_value=100, widgets=[
+        prog = ProgressBar(maxval=100, widgets=[
             'Downloading "%s"... ' % ( os.path.basename(target) ),
             Percentage(),
             ' ', Bar(), ' ',
