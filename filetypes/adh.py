@@ -43,10 +43,25 @@ class FileHandler_adh:
         if 'product_id' not in info:
             raise Exception('unknown product_id...')
 
-        if info['product_id'] == 'null':
-            raise Exception('unexpected "null" product_id...')
+        if info['product_id'] != 'null':
+            search_term = info['product_id']
+        else:
+            search_term = info['title']
 
-        book_id = ProductHelper.product_id_to_book_id(info['domain'], info['product_id'])
+        book_id = ProductHelper.search_for_book_id(info['domain'], search_term)
+
+        if info['product_id'] != book_id:
+            print('search for "%s" returned book ID: %s ... is this correct?' % ( search_term, book_id ))
+
+            response = None
+            while response not in [ 'y', 'n' ]:
+                response = input('[y/n]: ').lower()
+
+            if response != 'y':
+                raise Exception('incorrect book ID located...')
+
+            info['product_id'] = book_id
+
         book_metadata = ProductHelper.get_book_metadata(info['domain'], book_id)
         book_path = Library.make_book_absdir(book_metadata)
 

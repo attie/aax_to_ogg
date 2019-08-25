@@ -28,9 +28,9 @@ class ProductHelper:
         return url
 
     @classmethod
-    def product_id_to_book_id(cls, domain, product_id):
+    def search_for_book_id(cls, domain, search_term):
         # search for the product ID
-        url = cls.get_search_url(domain, product_id)
+        url = cls.get_search_url(domain, search_term)
         with urllib.request.urlopen(url) as search_req:
             et = html.fromstring(search_req.read())
 
