@@ -60,7 +60,8 @@ class FileHandler_adh:
             if response != 'y':
                 raise Exception('incorrect book ID located...')
 
-            info['product_id'] = book_id
+        if info['product_id'] == 'null':
+            info['product_id'] = ProductHelper.get_product_id(info['domain'], book_id)
 
         book_metadata = ProductHelper.get_book_metadata(info['domain'], book_id)
         book_path = Library.make_book_absdir(book_metadata)
