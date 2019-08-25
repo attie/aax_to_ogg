@@ -5,6 +5,7 @@ import urllib.parse, urllib.request
 import json
 from sys import stderr
 from lxml import html
+from collections import OrderedDict
 
 from aax_to_ogg.args import config
 
@@ -25,8 +26,22 @@ class ProductHelper:
 
     @staticmethod
     def get_adh_url(info):
-        prefix = 'http://cdl.audible.com/cgi-bin/aw_assemble_title_dynamic.aa?'
-        url = prefix + urllib.parse.urlencode(info)
+        arg_keys = [
+            'user_id',
+            'product_id',
+            'codec',
+            'awtype',
+            'cust_id',
+        ]
+
+        prefix = info['assemble_url']
+
+        args = OrderedDict()
+        for arg_key in arg_keys:
+            args[arg_key] = info[arg_key]
+
+        url = prefix + '?' + urllib.parse.urlencode(args)
+
         return url
 
     @classmethod
